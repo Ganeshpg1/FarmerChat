@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit, join_room
 import openai
 import os
 from dotenv import load_dotenv
+from waitress import serve
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "fallback_secret")
@@ -45,4 +46,4 @@ def handle_message(data):
         emit("message", {"username": username, "message": message}, broadcast=True)
 
 if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    serve(app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

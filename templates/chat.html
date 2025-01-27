@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Forum Chat</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+        #message-form {
+            display: flex;
+            padding: 10px;
+            background: #eee;
+        }
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #send-button {
+            padding: 10px;
+            margin-left: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #send-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <form id="message-form">
+            <input type="text" id="message-input" placeholder="Enter your message..." required>
+            <button id="send-button" type="submit">Send</button>
+        </form>
+    </div>
+    <script>
+        const socket = io();
+
+        // Ask for username
+        let username = prompt("Enter your username:");
+        if (!username) {
+            username = "Anonymous";
+        }
+        socket.emit("join", { username });
+
+        // Display messages
+        const messagesDiv = document.getElementById("messages");
+
+        socket.on("message", (data) => {
+            const messageElement = document.createElement("div");
+            messageElement.textContent = `${data.username}: ${data.message}`;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
+        });
+
+        socket.on("user_joined", (data) => {
+            const messageElement = document.createElement("div");
+            messageElement.textContent = `🟢 ${data.username} joined the chat`;
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        // Send messages
+        const messageForm = document.getElementById("message-form");
+        const messageInput = document.getElementById("message-input");
+
+        messageForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const message = messageInput.value;
+            socket.emit("send_message", { username, message });
+            messageInput.value = "";
+        });
+    </script>
+</body>
+</html>
